@@ -1,0 +1,152 @@
+Back End:
+DONE
+- make File object
+- get an image in the object
+- random image get function
+TODO
+- make cache
+- refresh cache every hour
+- cache 100 images
+
+
+Front End:
+DONE
+- remake frontend
+- get input working
+- get previous working
+- call back end random image
+TODO
+- find how much data each image is using
+- limit storing up to the last 20 images?
+
+
+LONG TERM:
+- docker
+- metrics (grafana)
+- tracing
+- db
+-- view history
+-- store images in db?
+- cache
+-- have 20% of total images ready to serve
+
+
+1. Frontend
+
+Purpose: Displays a new image every 60 seconds by fetching from the backend.
+
+Tech Stack:
+
+Framework: React / Vue / plain HTML + JS
+
+Features:
+
+Set an interval timer (e.g., setInterval) to fetch a new image
+
+Display image with graceful loading (spinner / fade-in)
+
+Optional: Button to "Get next image now"
+
+Hosting:
+
+Options: GitHub Pages, Netlify, Vercel
+
+2. Backend API
+
+Purpose: Serves random image URLs (or binary image data) to the frontend.
+
+Tech Stack:
+
+Language: Python (Flask/FastAPI), Node.js (Express), Go, etc.
+
+Endpoints:
+
+GET /random-image → returns image URL or data
+
+Features:
+
+Image randomization logic
+
+CORS support
+
+Rate limiting (optional)
+
+Caching (optional)
+
+Hosting:
+
+Options: Render, Fly.io, Railway, Vercel (serverless), or even AWS Lambda
+
+3. Image Source
+
+Options:
+
+Static Bucket:
+
+Store images in AWS S3 / Google Cloud Storage / Firebase Storage
+
+Serve public URLs
+
+External API:
+
+Use public image APIs like Unsplash, Pexels (may need API key and attribution)
+
+Internal Storage:
+
+Store image files on backend server or in a database (less scalable)
+
+4. (Optional) Cache Layer
+
+Purpose: Avoid excessive calls to external APIs or disk
+
+Options:
+
+In-memory: Simple in-app cache using LRU dict or similar
+
+External: Redis (if scaling up)
+
+5. Monitoring / Logging
+
+Purpose: Debugging and performance
+
+Logging request times, errors
+
+Basic analytics: number of requests, popular images, etc.
+
+Use tools like Logtail, Datadog (optional for demo)
+
+6. Security / Robustness (Optional but Resume-Worthy)
+
+Rate limiting per IP
+
+Input validation (if any)
+
+CORS configuration
+
+HTTPS via hosting provider
+
+CSP headers (Content Security Policy)
+
+🧪 Testing
+
+Unit tests for backend logic
+
+Smoke test: is /random-image reachable?
+
+Lighthouse / performance test on frontend
+
+📦 Bonus Ideas for Resume Points
+
+Admin dashboard: Upload/remove images
+
+User accounts: Save favorite images
+
+Tagging: Serve random image by tag (e.g., GET /random-image?tag=nature)
+
+Real-time mode: Use WebSockets to push a new image every minute
+
+CI/CD: Set up GitHub Actions for deployment pipeline
+
+Dockerization: Containerize backend
+
+Would you like a diagram or to narrow it down to a specific tech stack or complexity level (e.g., beginner-friendly, scalable, etc.)?

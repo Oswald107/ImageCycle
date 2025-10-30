@@ -1,0 +1,24 @@
+{
+  "name": "Spring Boot Kotlin Dev",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "settings": {
+    "java.configuration.runtimes": [
+      {
+        "name": "JavaSE-21",
+        "path": "/opt/java/openjdk"
+      }
+    ],
+    "java.home": "/opt/java/openjdk",
+    "java.import.gradle.enabled": true
+  },
+  "extensions": [
+    "vscjava.vscode-java-pack",
+    "fwcd.kotlin",
+    "richardwillis.vscode-gradle"
+  ],
+  "forwardPorts": [8080],
+  "postCreateCommand": "./gradlew build --no-daemon",
+  "remoteUser": "root"
+}
