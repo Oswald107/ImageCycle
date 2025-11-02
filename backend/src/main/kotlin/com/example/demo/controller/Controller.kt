@@ -25,26 +25,14 @@ class MyDataController(
     private val myService: MyService,
     private val databaseService: DatabaseService,
     ) {
-    @GetMapping("/random")
-    fun getRandomImage(): ResponseEntity<Resource> {
+    @GetMapping("/random", produces = [MediaType.IMAGE_JPEG_VALUE])
+    fun getRandomImage(): ResponseEntity<ByteArray> {
         val filename = databaseService.getRandomKey()
-        // val data = databaseService.getVal(filename)
-        // val resource = ByteArrayResource(data)
-
-        // val data = myService.getRandom()
-        // val filename = data!!.file.toPath().toString()
-        val bytes = Files.readAllBytes(File(filename).toPath())
-        val resource = ByteArrayResource(bytes)
-
-        // return ResponseEntity.ok()
-        //     .contentLength(10)
-        //     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"${filename}\"")
-        //     .contentType(MediaTypeFactory.getMediaType(filename).orElse(MediaType.APPLICATION_OCTET_STREAM))
-        //     .body(resource)
-
+        val data = databaseService.getVal(filename)
+        
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"sample.jpg\"")
             .contentType(MediaType.IMAGE_JPEG)
-            .body(resource)
+            .body(data)
     }
 }

@@ -55,6 +55,6 @@ class DatabaseService(
     }
 
     fun getVal(key: String): ByteArray {
-        return jedis.get(key).toByteArray()
+        return jedis.get(key.toByteArray())
     }
 }
