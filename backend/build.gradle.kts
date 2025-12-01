@@ -19,18 +19,36 @@ repositories {
 	mavenCentral()
 }
 
+
+dependencyManagement {
+  imports {
+    mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.21.0")
+  }
+}
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework:spring-web")
+	
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	
+	implementation("redis.clients:jedis:6.1.0")
+	implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
+
+    implementation("io.opentelemetry:opentelemetry-api")
+    implementation("io.opentelemetry:opentelemetry-sdk")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+	implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter") 
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-	implementation("redis.clients:jedis:6.1.0")
-	implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
+	
+	
+	
 }
 
 kotlin {

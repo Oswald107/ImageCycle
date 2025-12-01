@@ -1,0 +1,27 @@
+IMAGE_ROOT_DIRECTORY: /home/henry/Desktop/images/
+spring.application.name: demo
+spring:
+  redis:
+    host: localhost
+    port: 6379
+
+management:
+  tracing:
+    enabled: false
+    sampling:
+      probability: 1.0
+#   otlp:
+#     tracing:
+#       endpoint: http://localhost:4318
+
+# OpenTelemetry configuration
+otel:
+  service:
+    name: ${spring.application.name}
+  exporter:
+    otlp:
+      endpoint: http://localhost:4318
+
+otel.traces.exporter: none
+# otel.exporter.otlp.endpoint: http://localhost:4318
+otel.exporter.otlp.protocol: http/protobuf

@@ -6,7 +6,6 @@ import kotlin.io.path.listDirectoryEntries
 import com.example.demo.model.MyData
 import org.springframework.stereotype.Service
 import com.example.demo.service.DatabaseService
-
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpHeaders
@@ -18,14 +17,17 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import java.nio.file.Files
 import jakarta.annotation.PostConstruct;
- import java.io.ByteArrayOutputStream
+import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
+import redis.clients.jedis.UnifiedJedis;
 
 @Service
-class MyService(
+class ImageService(
     private var databaseService: DatabaseService,
 ) {
+    val jedis = UnifiedJedis("redis://localhost:6379");
+
     val files: List<String> = databaseService.getAllFilesFromDir()
     fun getRandom(): MyData? {
         val randomFile = files.random()
@@ -36,36 +38,50 @@ class MyService(
         return null
     }
 
-    // @PostConstruct
-    fun store() {
-        var i = 0
+    @PostConstruct
+    fun storeImagesInCache() {
         for(filename in files) {
-            if (i==10){
-                break
-            }
             val file = File(filename)
             if (file.exists()) {
                 val bytes = imageToByteArray(file)
-                databaseService.addToRedis(filename, bytes)
+                addToRedis(filename, bytes)
+            } else {
+                println("Failed to store image in cache, file does not exist")
             }
-            i++
         }
     }
 
-    // @PostConstruct
-    // fun a() {
-    //     val filePath = "/home/henry/Desktop/images/500+ Academic Male Poses/DSC_0593.jpg"
-    //     val imageBytes = Files.readAllBytes(File(filePath).toPath())
+    fun addToRedis(filename: String, data: ByteArray) {
+        val key = filename.toByteArray()
+        jedis.set(key, data);
+    }
 
-    //     databaseService.addToRedis(filePath, imageBytes)
-    //     println("Stored image '${filePath}' in Redis with key '$filePath'")
+    fun getRandomKey(): String?{
+        val cachedKey = jedis.randomKey()
+        if (cachedKey != null)
+            return jedis.randomKey()
+        println("Failed to retrieve key from cache")
 
-    //     val retrievedBytes = databaseService.getVal(filePath)
-    //     val outPath = "output.jpg"
-    //     Files.write(File(outPath).toPath(), retrievedBytes)
-    //     println("Retrieved and wrote image to '$outPath'")
-    // }
+        if (files.size != 0)
+            return files.random()
+        println("No files available to retrieve")
 
+        return null
+    }
+
+    fun getVal(key: String): ByteArray? {
+        val data = jedis.get(key.toByteArray())
+        if (data != null)
+            return data
+        println("Failed to retrieve image from cache")
+
+        val file = File(key)
+        if (file.exists()) {
+            return imageToByteArray(file)
+        }
+        println("Failed to retrieve image from storage, file doesn't exist")
+        return null
+    }
 
     fun imageToByteArray(imageFile: File): ByteArray {
         return Files.readAllBytes(imageFile.toPath())

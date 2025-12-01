@@ -3,8 +3,8 @@ DONE
 - make File object
 - get an image in the object
 - random image get function
-TODO
 - make cache
+TODO
 - refresh cache every hour
 - cache 100 images
 
@@ -29,6 +29,16 @@ LONG TERM:
 -- store images in db?
 - cache
 -- have 20% of total images ready to serve
+- load balancer
+- openapi
+
+
+NOTES:
+- a lot of the image sets are numbered. If I'm adding a db, maybe I can set it so that there's a column for the set they belong to. The frontend will recieve a detail about that set so the user knows that there are related images. They can click to show the next and previous images of that set, which should show the rotations
+- user table, track stats
+- maybe have the next image loaded by the 30 second mark, or even send them in batches? that gets complicated though if we wanna try the set idea
+- how much can i compress an image before it's noticable
+
 
 
 1. Frontend

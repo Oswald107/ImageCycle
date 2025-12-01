@@ -6,7 +6,6 @@ import kotlin.io.path.listDirectoryEntries
 import com.example.demo.model.MyData
 import org.springframework.stereotype.Service
 import org.springframework.beans.factory.annotation.Value
-import redis.clients.jedis.UnifiedJedis;
 import java.util.HashMap;
 import java.util.UUID
 
@@ -16,8 +15,6 @@ class DatabaseService(
     @Value("\${IMAGE_ROOT_DIRECTORY}")
     private val imageRootDirectory: String,
 ) {
-    val jedis = UnifiedJedis("redis://localhost:6379");
-
     fun getAllFilesFromDir(): List<String> {
         val output = mutableListOf<String>()
         val directory = File(imageRootDirectory)
@@ -44,17 +41,4 @@ class DatabaseService(
         return output
     }
 
-    fun addToRedis(filename: String, data: ByteArray) {
-        val key = filename.toByteArray()
-        jedis.set(key, data);
-        println(jedis.get(key)); // >>> OK
-    }
-
-    fun getRandomKey(): String{
-        return jedis.randomKey()
-    }
-
-    fun getVal(key: String): ByteArray {
-        return jedis.get(key.toByteArray())
-    }
 }
