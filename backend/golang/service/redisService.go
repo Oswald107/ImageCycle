@@ -1,4 +1,4 @@
-package main
+package service
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func NewRedisService(addr string, password string, db int) *RedisService {
 }
 
 func (s *RedisService) GetRandomKey() string {
-	key, err := rdb.RandomKey(ctx).Result()
+	key, err := s.Client.RandomKey(s.Context).Result()
 	if err != nil {
 		log.Fatal("Failed to get random key")
 		panic(err)
@@ -37,14 +37,14 @@ func (s *RedisService) GetRandomKey() string {
 	return key
 }
 
-func (s *RedisService) GetBytes() ([]byte, error) {
-	val, err := rdb.Get(ctx, key).Bytes()
+func (s *RedisService) GetBytes(key string) ([]byte, error) {
+	val, err := s.Client.Get(s.Context, key).Bytes()
 	if err != nil {
 		panic(err)
 	}
-	return val
+	return val, nil
 }
 
-func (s *RedisService) SetBytes() {
-	return s.Client.Set(s.Context, key, value, 0).Err()
+func (s *RedisService) SetBytes(key string, val []byte) {
+	s.Client.Set(s.Context, key, val, 0).Err()
 }
