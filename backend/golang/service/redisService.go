@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -46,5 +47,5 @@ func (s *RedisService) GetBytes(key string) ([]byte, error) {
 }
 
 func (s *RedisService) SetBytes(key string, val []byte) {
-	s.Client.Set(s.Context, key, val, 0).Err()
+	s.Client.Set(s.Context, key, val, time.Second*10).Err()
 }

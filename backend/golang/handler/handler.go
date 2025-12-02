@@ -17,11 +17,10 @@ func NewImageHandler(s service.ImageService) *ImageHandler {
 }
 
 func (h *ImageHandler) GetRandomImage(c *gin.Context) {
-
-	key := h.Service.Redis.GetRandomKey()
-	val, err := h.Service.Redis.GetBytes(key)
-	if err != nil {
-		panic(err)
-	}
+	val := h.Service.GetRandomImage()
 	c.Data(http.StatusOK, "image/jpeg", val)
+}
+
+func (h *ImageHandler) RefreshCache() {
+	h.Service.RefreshCache()
 }

@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron"
 )
 
 func main() {
@@ -15,6 +16,11 @@ func main() {
 	imageService := service.NewImageService(*redisService)
 
 	handler := handler.NewImageHandler(*imageService)
+
+	c := cron.New()
+	// c.AddFunc("0 30 * * * *", handler.RefreshCache())
+	c.AddFunc("*/10 * * * * *", handler.RefreshCache)
+	c.Start()
 
 	router := gin.Default()
 	router.GET("/random", handler.GetRandomImage)
