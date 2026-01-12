@@ -1,11 +1,9 @@
 package service
 
 import (
-	"bytes"
-	"fmt"
 	"io"
 	"io/fs"
-	"log"
+	"log/slog"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -13,13 +11,17 @@ import (
 	"time"
 )
 
+var imagesCachedPerJob int = 100
+
 type ImageService struct {
+	logger    *slog.Logger
 	Redis     RedisService
 	Filenames *[]string
 }
 
-func NewImageService(r RedisService) *ImageService {
+func NewImageService(logger *slog.Logger, r RedisService) *ImageService {
 	return &ImageService{
+		logger:    logger.With("imageService"),
 		Redis:     r,
 		Filenames: &[]string{},
 	}
@@ -36,11 +38,11 @@ func (s ImageService) GetAllFilesFromDir() {
 		".tiff",
 		".webp",
 	}
-	imageRootDirectory := "/home/henry/Desktop/images/"
+	imageRootDirectory := "/home/henry/Desktop/images/mountains"
 
 	err := filepath.Walk(imageRootDirectory, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
-			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
+			s.logger.Warn("failure accessing a path %q: %v\n", path, err)
 			return err
 		}
 
@@ -51,45 +53,33 @@ func (s ImageService) GetAllFilesFromDir() {
 		}
 
 		if info.IsDir() {
-			fmt.Printf("visited dir: %q\n", path)
+			s.logger.Debug("visited dir: %q\n", path)
 		}
 		return nil
 	})
 	if err != nil {
-		fmt.Printf("error walking the path %q: %v\n", imageRootDirectory, err)
+		s.logger.Warn("error walking the path %q: %v\n", imageRootDirectory, err)
 	}
-	fmt.Printf("output len %d\n", len(output))
+	s.logger.Debug("output len %d\n", len(output))
 
 	*s.Filenames = output
 }
 
 func (s ImageService) GetRandomImage() []byte {
-	var (
-		buf    bytes.Buffer
-		logger = log.New(&buf, "WARNING: ", log.Lshortfile)
-
-		warnf = func(s string) {
-			logger.Output(2, s)
-		}
-	)
-
 	key := s.Redis.GetRandomKey()
 	val, err := s.Redis.GetBytes(key)
 	if err != nil {
-		warnf("Failed to retrieve image from cache, grabbing image file directly")
+		s.logger.Warn("Failed to retrieve image from cache, grabbing image file directly")
 		_, val = s.GetRandomImageWithoutCache()
 	}
+	s.logger.Info("Returning image")
 	return val
 }
 
 func (s ImageService) GetRandomImageWithoutCache() (string, []byte) {
-
-	log.Printf("file array len: %d", len(*s.Filenames))
 	if len(*s.Filenames) == 0 {
 		s.GetAllFilesFromDir()
 	}
-
-	log.Printf("file array len: %d", len(*s.Filenames))
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	randomIndex := r.Intn(len(*s.Filenames))
@@ -97,20 +87,20 @@ func (s ImageService) GetRandomImageWithoutCache() (string, []byte) {
 
 	file, err := os.Open(key)
 	if err != nil {
-		log.Fatalf("failed to open image file: %v", err)
+		s.logger.Error("failed to open image file: %v", err.Error())
 	}
 	defer file.Close()
 
 	imageBytes, err := io.ReadAll(file)
 	if err != nil {
-		log.Fatalf("failed to read image bytes: %v", err)
+		s.logger.Error("failed to read image bytes: %v", err.Error())
 	}
 
 	return key, imageBytes
 }
 
 func (s *ImageService) RefreshCache() {
-	for i := 0; i < 2; i++ {
+	for range imagesCachedPerJob {
 		key, imageBytes := s.GetRandomImageWithoutCache()
 		s.Redis.SetBytes(key, imageBytes)
 	}

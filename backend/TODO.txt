@@ -4,9 +4,9 @@ DONE
 - get an image in the object
 - random image get function
 - make cache
+- refresh cache every x minutes
+- cache x images
 TODO
-- refresh cache every hour
-- cache 100 images
 
 
 Frontend:
@@ -27,10 +27,11 @@ LONG TERM:
 - db
 -- view history
 -- store images in db?
-- cache
--- have 20% of total images ready to serve
 - load balancer
 - openapi
+DONE
+- cache
+-- have 20% of total images ready to serve
 
 
 NOTES:

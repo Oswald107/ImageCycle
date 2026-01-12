@@ -2,18 +2,21 @@ package service
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 )
 
+var expirationTime time.Duration = time.Hour
+
 type RedisService struct {
+	logger  *slog.Logger
 	Client  *redis.Client
 	Context context.Context
 }
 
-func NewRedisService(addr string, password string, db int) *RedisService {
+func NewRedisService(logger *slog.Logger, addr string, password string, db int) *RedisService {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password
@@ -24,6 +27,7 @@ func NewRedisService(addr string, password string, db int) *RedisService {
 	ctx := context.Background()
 
 	return &RedisService{
+		logger:  logger.With("redisService"),
 		Client:  rdb,
 		Context: ctx,
 	}
@@ -32,7 +36,7 @@ func NewRedisService(addr string, password string, db int) *RedisService {
 func (s *RedisService) GetRandomKey() string {
 	key, err := s.Client.RandomKey(s.Context).Result()
 	if err != nil {
-		log.Fatal("Failed to get random key")
+		s.logger.Error("Failed to get random key: ", err)
 		panic(err)
 	}
 	return key
@@ -47,5 +51,5 @@ func (s *RedisService) GetBytes(key string) ([]byte, error) {
 }
 
 func (s *RedisService) SetBytes(key string, val []byte) {
-	s.Client.Set(s.Context, key, val, time.Second*10).Err()
+	s.Client.Set(s.Context, key, val, expirationTime).Err()
 }
