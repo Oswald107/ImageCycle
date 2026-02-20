@@ -6,6 +6,8 @@ import (
 
 	"my-go-api/service"
 
+	"my-go-api/utility"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,22 +23,6 @@ func NewImageHandler(logger *slog.Logger, s service.ImageService) *ImageHandler 
 	}
 }
 
-// func CORSMiddleware() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-// 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-// 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-// 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
-
-// 		if c.Request.Method == "OPTIONS" {
-// 			c.AbortWithStatus(204)
-// 			return
-// 		}
-
-// 		c.Next()
-// 	}
-// }
-
 func (h *ImageHandler) GetRandomImage(c *gin.Context) {
 	val := h.Service.GetRandomImage()
 	c.Data(http.StatusOK, "image/jpeg", val)
@@ -44,4 +30,16 @@ func (h *ImageHandler) GetRandomImage(c *gin.Context) {
 
 func (h *ImageHandler) RefreshCache() {
 	h.Service.RefreshCache()
+}
+
+func (h *ImageHandler) RateLimitMiddleware(ipRateLimiter *utility.IPRateLimiter, next gin.HandlerFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ip := c.ClientIP()
+		limiter := ipRateLimiter.GetLimiter(ip)
+		if limiter.Allow() {
+			next(c)
+		} else {
+			h.logger.Error("Rate Limit Exceeded", http.StatusTooManyRequests)
+		}
+	}
 }

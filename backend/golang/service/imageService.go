@@ -38,7 +38,7 @@ func (s ImageService) GetAllFilesFromDir() {
 		".tiff",
 		".webp",
 	}
-	imageRootDirectory := "/home/henry/Desktop/images/mountains"
+	imageRootDirectory := "/home/henry/Desktop/images"
 
 	err := filepath.Walk(imageRootDirectory, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {

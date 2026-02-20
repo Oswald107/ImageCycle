@@ -7,9 +7,14 @@ import (
 	"my-go-api/service"
 	"os"
 
+	"my-go-api/utility"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
 	"github.com/robfig/cron"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -37,7 +42,10 @@ func main() {
 
 	router.Use(cors.New(config))
 
-	router.GET("/random", handler.GetRandomImage)
+	ipRateLimiter := utility.NewIPRateLimiter()
 
-	router.Run("localhost:8080")
+	router.GET("/random", handler.RateLimitMiddleware(ipRateLimiter, handler.GetRandomImage))
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	router.Run(":8080")
 }

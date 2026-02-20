@@ -23,7 +23,7 @@ function App() {
     }
 
     const fetchImages = async () => {
-      const response = await axios.get('http://localhost:8080/api/mydata/random', {
+      const response = await axios.get('http://localhost:8080/random', {
         responseType: 'blob', // or 'blob' if binary
       })
       
