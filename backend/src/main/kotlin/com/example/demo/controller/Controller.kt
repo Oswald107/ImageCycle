@@ -1,7 +1,8 @@
 package com.example.demo.controller
 
-import com.example.demo.model.MyData
-import com.example.demo.service.ImageService
+import com.example.demo.cache.CacheService
+import com.example.demo.storage.StorageService
+
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -14,32 +15,54 @@ import org.springframework.http.MediaTypeFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.nio.file.Files
-import javax.xml.crypto.Data
 import java.io.File
-import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.Tracer
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import jakarta.annotation.PostConstruct
+import org.springframework.core.io.FileSystemResource
 
 @RestController
-@RequestMapping("")
 class MyDataController(
-    private val imageService: ImageService,
+    private val storageService: StorageService,
+    private val cacheService: CacheService
     ) {
 
     val logger = LoggerFactory.getLogger(MyDataController::class.java);
 
     @GetMapping("/random", produces = [MediaType.IMAGE_JPEG_VALUE])
-    fun getRandomImage(): ResponseEntity<ByteArray> {
-        logger.info("This is a test log");
-        val filename = imageService.getRandomKey()
+    fun getImage(): ResponseEntity<Resource> {
+        val filename = cacheService.getImageName()
             ?: return ResponseEntity.notFound().build()
-        val data = imageService.getVal(filename)
+        val data = storageService.getImage(filename)
             ?: return ResponseEntity.notFound().build()
         
+        val resource: Resource = FileSystemResource(data.file)
+
+        val contentType = MediaTypeFactory
+            .getMediaType(data.file.name)
+            .orElse(MediaType.APPLICATION_OCTET_STREAM)
+
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"sample.jpg\"")
-            .contentType(MediaType.IMAGE_JPEG)
-            .body(data)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"${data.file.name}\"")
+            .contentType(contentType)
+            .body(resource)
+            
+    }
+
+    @PostConstruct
+    @Scheduled(cron = "0 */30 * * * *")
+    fun refreshCache() {
+        val imageNames = mutableSetOf<String>()
+
+        while (imageNames.size < 60) {
+            val fileName = storageService.getRandomImageName()
+            if (fileName != null) {
+                imageNames.add(fileName)
+            } else {
+                logger.warn("Failed to fetch image name from storage")
+            }
+        }
+
+        cacheService.createNewSet(imageNames.toList())
     }
 }

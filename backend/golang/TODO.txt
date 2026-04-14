@@ -1,0 +1,15 @@
+one test case
+finish redis service
+finish fileStorage service
+get test command to work
+
+full factory test coverage
+make awsS3 service
+
+a := make(chan int)
+
+go funcName() {
+    a <- 4
+}
+
+x <- a

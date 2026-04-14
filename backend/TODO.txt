@@ -1,5 +1,9 @@
+General:
+- draw up diagram
+- write README to explain process
+
 Backend:
-DONE
+- organize better
 - make File object
 - get an image in the object
 - random image get function
@@ -22,16 +26,18 @@ TODO
 
 LONG TERM:
 - docker
-- metrics (grafana)
-- tracing
+- tracing (shelved)
 - db
 -- view history
 -- store images in db?
 - load balancer
 - openapi
 DONE
+- prometheus
+- otel logs
 - cache
 -- have 20% of total images ready to serve
+- metrics (grafana)
 
 
 NOTES:
@@ -48,10 +54,9 @@ Image Source
     Serve public URLs
 Security / Robustness
     Rate limiting per IP
-    Input validation (if any)
-    CORS configuration
+    - rate limit works
+    - need to send error to frontend
     HTTPS via hosting provider
-    CSP headers (Content Security Policy)
 Testing
     Unit tests for backend logic
     Smoke test: is /random-image reachable?
@@ -62,4 +67,3 @@ Bonus Ideas
     Tagging: Serve random image by tag (e.g., GET /random-image?tag=nature)
     Real-time mode: Use WebSockets to push a new image every minute
     CI/CD: Set up GitHub Actions for deployment pipeline
-    Dockerization: Containerize backend

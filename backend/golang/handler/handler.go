@@ -4,32 +4,32 @@ import (
 	"log/slog"
 	"net/http"
 
-	"my-go-api/service"
-
+	"my-go-api/factory"
 	"my-go-api/utility"
 
 	"github.com/gin-gonic/gin"
 )
 
 type ImageHandler struct {
-	logger  *slog.Logger
-	Service service.ImageService
+	logger       *slog.Logger
+	imageFactory *factory.ImageFactory
 }
 
-func NewImageHandler(logger *slog.Logger, s service.ImageService) *ImageHandler {
+func NewImageHandler(logger *slog.Logger, imageFactory *factory.ImageFactory) *ImageHandler {
 	return &ImageHandler{
-		logger:  logger.With("handler"),
-		Service: s,
+		logger:       logger.With("handler"),
+		imageFactory: imageFactory,
 	}
 }
 
 func (h *ImageHandler) GetRandomImage(c *gin.Context) {
-	val := h.Service.GetRandomImage()
-	c.Data(http.StatusOK, "image/jpeg", val)
+	imageName := h.imageFactory.GetRandomImageName()
+	imageContent := h.imageFactory.GetImage(imageName)
+	c.Data(http.StatusOK, "image/jpeg", imageContent)
 }
 
 func (h *ImageHandler) RefreshCache() {
-	h.Service.RefreshCache()
+	h.imageFactory.RefreshCache()
 }
 
 func (h *ImageHandler) RateLimitMiddleware(ipRateLimiter *utility.IPRateLimiter, next gin.HandlerFunc) gin.HandlerFunc {
